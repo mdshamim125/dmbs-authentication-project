@@ -6,10 +6,13 @@ import auth from "../firebase.config";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { AuthContext } from "../Provider/AuthProvider";
+import axios from "axios";
+import { Typewriter } from "react-simple-typewriter";
 
 const Register = () => {
   const { createUser, updateUserProfile } = useContext(AuthContext);
   const [registerError, setRegisterError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -22,6 +25,7 @@ const Register = () => {
     const { email, name, photo, password } = data;
     setRegisterError("");
 
+    // Password validation
     if (password.length < 6) {
       setRegisterError("Password should be at least 6 characters or longer");
       return;
@@ -42,21 +46,27 @@ const Register = () => {
       return;
     }
 
+    // Image upload to imgBB
+    const formData = new FormData();
+    formData.append("image", photo[0]);
+
+    setLoading(true);
+
     try {
+      const response = await axios.post(
+        `https://api.imgbb.com/1/upload?key=${
+          import.meta.env.VITE_IMGBB_API_KEY
+        }`,
+        formData
+      );
+
+      const image = response.data.data.display_url;
       const result = await createUser(email, password);
       const user = result.user;
 
-      await updateUserProfile(name);
-      console.log(user);
-
+      await updateUserProfile(name, image);
       await sendEmailVerification(user);
       toast.success("Verification email sent. Please check your inbox.");
-
-      // Swal.fire({
-      //   title: "Good job!",
-      //   text: "Registration successful! Please verify your email.",
-      //   icon: "success",
-      // });
       navigate("/");
     } catch (error) {
       const errorMessage = error.message;
@@ -70,43 +80,48 @@ const Register = () => {
       }
 
       toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <section className="bg-white dark:bg-gray-900">
+    <section className="bg-gray-100 min-h-screen flex items-center justify-center">
       <div className="container flex flex-col justify-center items-center px-6 mx-auto">
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md">
-          <div className="flex items-center justify-center mt-6">
-            <a
-              href="#"
-              className="w-1/3 pb-4 font-medium text-center text-gray-800 capitalize border-b-2 border-blue-500 dark:border-blue-400 dark:text-white"
-            >
-              Sign Up
-            </a>
-          </div>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="w-full max-w-md shadow-lg p-6 bg-white rounded-lg"
+        >
+          <h2 className="text-2xl font-semibold text-center text-gray-800">
+            <Typewriter
+              words={["Sign Up"]}
+              loop={1}
+              cursor
+              cursorStyle="_"
+              typeSpeed={50}
+              deleteSpeed={50}
+              delaySpeed={1000}
+            />
+          </h2>
+
+          <p className="mt-2 text-center text-gray-600 dark:text-gray-400">
+            <Typewriter
+              words={["  Create a new account!"]}
+              loop={1}
+              cursor
+              cursorStyle="_"
+              typeSpeed={500}
+              deleteSpeed={50}
+              delaySpeed={1000}
+            />
+          </p>
 
           <div className="relative flex items-center mt-8">
-            <span className="absolute">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-6 h-6 mx-3 text-gray-300 dark:text-gray-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-            </span>
-
             <input
               type="text"
-              className="block w-full py-3 text-gray-700 bg-white border rounded-lg px-11 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
+              className={`block w-full py-3 text-gray-700 border rounded-lg px-4 transition duration-300 focus:border-blue-500 ${
+                errors.name ? "border-red-400" : "border-gray-300"
+              }`}
               placeholder="Username"
               {...register("name", { required: true })}
             />
@@ -117,54 +132,26 @@ const Register = () => {
 
           <label
             htmlFor="dropzone-file"
-            className="flex items-center px-3 py-3 mx-auto mt-6 text-center bg-white border-2 border-dashed rounded-lg cursor-pointer dark:border-gray-600 dark:bg-gray-900"
+            className="flex items-center px-3 py-3 mx-auto mt-6 text-center bg-gray-50 border-2 border-dashed rounded-lg cursor-pointer"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6 text-gray-300 dark:text-gray-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-              />
-            </svg>
-
-            <h2 className="mx-3 text-gray-400">Profile Photo</h2>
-
             <input
               id="dropzone-file"
               type="file"
-              {...register("photo")}
+              {...register("photo", { required: true })}
               className="hidden"
             />
+            <span className="mx-3 text-gray-400">Profile Photo</span>
           </label>
+          {errors.photo && (
+            <span className="text-red-400">This field is required</span>
+          )}
 
-          <div className="relative flex items-center mt-6">
-            <span className="absolute">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-6 h-6 mx-3 text-gray-300 dark:text-gray-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
-            </span>
-
+          <div className="relative flex items-center mt-4">
             <input
               type="email"
-              className="block w-full py-3 text-gray-700 bg-white border rounded-lg px-11 dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
+              className={`block w-full py-3 text-gray-700 border rounded-lg px-4 transition duration-300 focus:border-blue-500 ${
+                errors.email ? "border-red-400" : "border-gray-300"
+              }`}
               placeholder="Email address"
               {...register("email", { required: true })}
             />
@@ -174,26 +161,11 @@ const Register = () => {
           )}
 
           <div className="relative flex items-center mt-4">
-            <span className="absolute">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-6 h-6 mx-3 text-gray-300 dark:text-gray-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
-            </span>
-
             <input
               type="password"
-              className="block w-full px-10 py-3 text-gray-700 bg-white border rounded-lg dark:bg-gray-900 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 dark:focus:border-blue-300 focus:ring-blue-300 focus:outline-none focus:ring focus:ring-opacity-40"
+              className={`block w-full py-3 text-gray-700 border rounded-lg px-4 transition duration-300 focus:border-blue-500 ${
+                errors.password ? "border-red-400" : "border-gray-300"
+              }`}
               placeholder="Password"
               {...register("password", { required: true })}
             />
@@ -204,14 +176,20 @@ const Register = () => {
           {registerError && <p className="p-4 text-red-600">{registerError}</p>}
 
           <div className="mt-6">
-            <button className="w-full px-6 py-3 text-sm font-medium tracking-wide text-white capitalize transition-colors duration-300 transform bg-blue-500 rounded-lg hover:bg-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-50">
-              Sign Up
+            <button
+              type="submit"
+              className={`w-full px-6 py-3 text-sm font-medium text-white transition duration-300 rounded-lg ${
+                loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-400"
+              }`}
+              disabled={loading}
+            >
+              {loading ? "Signing Up..." : "Sign Up"}
             </button>
 
-            <div className="mt-6 text-center ">
+            <div className="mt-6 text-center">
               <Link
                 to="/login"
-                className="text-sm text-blue-500 hover:underline dark:text-blue-400"
+                className="text-sm text-blue-500 hover:underline"
               >
                 Already have an account?
               </Link>
@@ -224,3 +202,79 @@ const Register = () => {
 };
 
 export default Register;
+
+// import { useState } from "react";
+// import axios from "axios";
+
+// const Register = () => {
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [loading, setLoading] = useState(false);
+//   const [error, setError] = useState("");
+//   const [success, setSuccess] = useState("");
+
+//   const handleSignup = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
+//     setError("");
+//     setSuccess("");
+//     try {
+//       const response = await axios.post("http://localhost:5000/signup", {
+//         email,
+//         password,
+//       });
+//       setSuccess(response.data.message);
+//       setEmail("");
+//       setPassword("");
+//     } catch (err) {
+//       setError("Signup failed. Please try again.");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   return (
+//     <div className="max-w-md mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
+//       <h2 className="text-2xl font-bold mb-6 text-center">Create an Account</h2>
+//       <form onSubmit={handleSignup}>
+//         <div className="mb-4">
+//           <label className="block text-gray-700 text-sm font-bold mb-2">
+//             Email
+//           </label>
+//           <input
+//             type="email"
+//             value={email}
+//             onChange={(e) => setEmail(e.target.value)}
+//             placeholder="Enter your email"
+//             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+//             required
+//           />
+//         </div>
+//         <div className="mb-4">
+//           <label className="block text-gray-700 text-sm font-bold mb-2">
+//             Password
+//           </label>
+//           <input
+//             type="password"
+//             value={password}
+//             onChange={(e) => setPassword(e.target.value)}
+//             placeholder="Enter your password"
+//             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+//             required
+//           />
+//         </div>
+//         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+//         {success && <p className="text-green-500 text-sm mb-4">{success}</p>}
+//         <button
+//           type="submit"
+//           className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none"
+//           disabled={loading}
+//         >
+//           {loading ? "Signing up..." : "Signup"}
+//         </button>
+//       </form>
+//     </div>
+//   );
+// };
+
+// export default Register;

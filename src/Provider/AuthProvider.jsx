@@ -10,12 +10,13 @@ import {
 } from "firebase/auth";
 import React, { createContext, useEffect, useState } from "react";
 import auth from "../firebase.config";
+import axios from "axios";
 
 export const AuthContext = createContext(null);
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState();
-//   const [loading, setLoading] = useState(false);
+  //   const [loading, setLoading] = useState(false);
   const googleProvider = new GoogleAuthProvider();
   const createUser = (email, password) => {
     return createUserWithEmailAndPassword(auth, email, password);
@@ -41,10 +42,21 @@ const AuthProvider = ({ children }) => {
     return signOut(auth);
   };
 
-  const updateUserProfile = (name) => {
+  // save user
+  const saveUser = async (user) => {
+    const currentUser = {
+      email: user?.email,
+      role: "user",
+      // status: "Verified",
+    };
+    const { data } = await axios.put(`http://localhost:5000/user`, currentUser);
+    return data;
+  };
+
+  const updateUserProfile = (name, photo) => {
     return updateProfile(auth.currentUser, {
       displayName: name,
-      //   photoURL: photo,
+      photoURL: photo,
     });
   };
 
@@ -52,6 +64,10 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      console.log(currentUser);
+      if (currentUser) {
+        saveUser(currentUser);
+      }
       console.log(currentUser);
     });
     return () => {
