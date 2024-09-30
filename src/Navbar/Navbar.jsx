@@ -1,12 +1,14 @@
 import React, { useContext, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { AuthContext } from "../Provider/AuthProvider";
+import useRole from "../Hook/useRole";
 
 const Navbar = () => {
   const { user, logOut } = useContext(AuthContext);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(false); // State for small devices navbar
-
+  const { loggedInUser } = useRole();
+  console.log(loggedInUser);
   const handleDropDownProfile = () => setIsProfileOpen(!isProfileOpen);
   const handleDropDownNav = () => setIsNavOpen(!isNavOpen); // Function for mobile nav dropdown
 
@@ -17,35 +19,96 @@ const Navbar = () => {
     (user?.photoURL && user?.emailVerified === true && user?.photoURL) ||
     "https://i.ibb.co/3BY9Fks/profile.png"; // Replace with your default profile URL
 
+  // const navLinks = (
+  //   <>
+  //     <li>
+  //       <NavLink
+  //         className="mr-3 text-base hover:text-gray-900"
+  //         to="/"
+  //         activeClassName="text-indigo-600"
+  //       >
+  //         Home
+  //       </NavLink>
+  //     </li>
+  //    {
+  //     !user && ( <li>
+  //       <NavLink
+  //         className="mr-3 text-base hover:text-gray-900"
+  //         to="login"
+  //         activeClassName="text-indigo-600"
+  //       >
+  //         Login
+  //       </NavLink>
+  //     </li>
+  //     <li>
+  //       <NavLink
+  //         to="register"
+  //         className="mr-3 text-base hover:text-gray-900"
+  //         activeClassName="text-indigo-600"
+  //       >
+  //         Register
+  //       </NavLink>
+  //     </li>)
+  //    }
+  //   </>
+  // );
+
   const navLinks = (
     <>
       <li>
         <NavLink
-          className="mr-3 text-base hover:text-gray-900"
+          className={({ isActive }) =>
+            isActive
+              ? "mr-3 text-base text-indigo-600"
+              : "mr-3 text-base hover:text-gray-900"
+          }
           to="/"
-          activeClassName="text-indigo-600"
         >
           Home
         </NavLink>
       </li>
-      <li>
+      {!user && (
+        <>
+          <li>
+            <NavLink
+              className={({ isActive }) =>
+                isActive
+                  ? "mr-3 text-base text-indigo-600"
+                  : "mr-3 text-base hover:text-gray-900"
+              }
+              to="login"
+            >
+              Login
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              className={({ isActive }) =>
+                isActive
+                  ? "mr-3 text-base text-indigo-600"
+                  : "mr-3 text-base hover:text-gray-900"
+              }
+              to="register"
+            >
+              Register
+            </NavLink>
+          </li>
+        </>
+      )}
+      {
+        user &&  <li>
         <NavLink
-          className="mr-3 text-base hover:text-gray-900"
-          to="login"
-          activeClassName="text-indigo-600"
+          className={({ isActive }) =>
+            isActive
+              ? "mr-3 text-base text-indigo-600"
+              : "mr-3 text-base hover:text-gray-900"
+          }
+          to="/about-us"
         >
-          Login
+          About Us
         </NavLink>
       </li>
-      <li>
-        <NavLink
-          to="register"
-          className="mr-3 text-base hover:text-gray-900"
-          activeClassName="text-indigo-600"
-        >
-          Register
-        </NavLink>
-      </li>
+      }
     </>
   );
 
@@ -173,6 +236,12 @@ const Navbar = () => {
                       Login
                     </Link>
                   )}
+                </li>
+                <li>
+                  {
+                    (user && user?.emailVerified === true && loggedInUser?.role==="admin") && 
+                    <button><Link to="/dashboard">My Dashboard</Link></button>
+                  }
                 </li>
               </ul>
             )}

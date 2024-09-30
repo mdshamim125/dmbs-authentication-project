@@ -86,23 +86,15 @@ const Login = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg dark:bg-gray-800">
         <h2 className="text-2xl font-semibold text-center text-gray-800 dark:text-gray-200">
-          <Typewriter
-            words={[" Welcome Back!"]}
-            loop={1}
-            cursor
-            cursorStyle="_"
-            typeSpeed={500}
-            deleteSpeed={50}
-            delaySpeed={1000}
-          />
+          Welcome Back!
         </h2>
         <p className="mt-2 text-center text-gray-600 dark:text-gray-400">
           <Typewriter
             words={[" Sign in to your account"]}
-            loop={1}
+            loop={0}
             cursor
             cursorStyle="_"
-            typeSpeed={50}
+            typeSpeed={70}
             deleteSpeed={50}
             delaySpeed={1000}
           />

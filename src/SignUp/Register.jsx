@@ -53,21 +53,33 @@ const Register = () => {
     setLoading(true);
 
     try {
+      // Correct API Key usage
+      const imgBBKey = import.meta.env.VITE_IMGBB_API_KEY;
+
       const response = await axios.post(
-        `https://api.imgbb.com/1/upload?key=${
-          import.meta.env.VITE_IMGBB_API_KEY
-        }`,
+        `https://api.imgbb.com/1/upload?key=${imgBBKey}`,
         formData
       );
 
-      const image = response.data.data.display_url;
-      const result = await createUser(email, password);
-      const user = result.user;
+      if (
+        response.data &&
+        response.data.data &&
+        response.data.data.display_url
+      ) {
+        const image = response.data.data.display_url;
 
-      await updateUserProfile(name, image);
-      await sendEmailVerification(user);
-      toast.success("Verification email sent. Please check your inbox.");
-      navigate("/");
+        // Creating user and updating profile with imgBB URL
+        const result = await createUser(email, password);
+        const user = result.user;
+
+        await updateUserProfile(name, image);
+        await sendEmailVerification(user);
+
+        toast.success("Verification email sent. Please check your inbox.");
+        navigate("/");
+      } else {
+        throw new Error("Image upload failed.");
+      }
     } catch (error) {
       const errorMessage = error.message;
 
@@ -93,29 +105,22 @@ const Register = () => {
           className="w-full max-w-md shadow-lg p-6 bg-white rounded-lg"
         >
           <h2 className="text-2xl font-semibold text-center text-gray-800">
-            <Typewriter
-              words={["Sign Up"]}
-              loop={1}
-              cursor
-              cursorStyle="_"
-              typeSpeed={50}
-              deleteSpeed={50}
-              delaySpeed={1000}
-            />
+            Sign Up
           </h2>
 
           <p className="mt-2 text-center text-gray-600 dark:text-gray-400">
             <Typewriter
               words={["  Create a new account!"]}
-              loop={1}
+              loop={0}
               cursor
               cursorStyle="_"
-              typeSpeed={500}
+              typeSpeed={70}
               deleteSpeed={50}
               delaySpeed={1000}
             />
           </p>
 
+          {/* Username */}
           <div className="relative flex items-center mt-8">
             <input
               type="text"
@@ -130,22 +135,30 @@ const Register = () => {
             <span className="text-red-400">This field is required</span>
           )}
 
+          {/* Image Upload */}
           <label
-            htmlFor="dropzone-file"
+            htmlFor="image"
             className="flex items-center px-3 py-3 mx-auto mt-6 text-center bg-gray-50 border-2 border-dashed rounded-lg cursor-pointer"
           >
             <input
-              id="dropzone-file"
+              {...register("photo", {
+                required: {
+                  value: true,
+                  message: "This field is required.",
+                },
+              })}
               type="file"
-              {...register("photo", { required: true })}
-              className="hidden"
+              id="photo"
+              name="photo"
+              accept="image/*"
+              className="block w-full px-4 py-2 text-gray-700 bg-white border rounded-lg    focus:border-blue-400 focus:ring-opacity-40  focus:outline-none focus:ring focus:ring-blue-300"
             />
-            <span className="mx-3 text-gray-400">Profile Photo</span>
           </label>
           {errors.photo && (
             <span className="text-red-400">This field is required</span>
           )}
 
+          {/* Email */}
           <div className="relative flex items-center mt-4">
             <input
               type="email"
@@ -160,6 +173,7 @@ const Register = () => {
             <span className="text-red-400">This field is required</span>
           )}
 
+          {/* Password */}
           <div className="relative flex items-center mt-4">
             <input
               type="password"
@@ -175,6 +189,7 @@ const Register = () => {
           )}
           {registerError && <p className="p-4 text-red-600">{registerError}</p>}
 
+          {/* Submit Button */}
           <div className="mt-6">
             <button
               type="submit"
@@ -202,79 +217,3 @@ const Register = () => {
 };
 
 export default Register;
-
-// import { useState } from "react";
-// import axios from "axios";
-
-// const Register = () => {
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState("");
-//   const [success, setSuccess] = useState("");
-
-//   const handleSignup = async (e) => {
-//     e.preventDefault();
-//     setLoading(true);
-//     setError("");
-//     setSuccess("");
-//     try {
-//       const response = await axios.post("http://localhost:5000/signup", {
-//         email,
-//         password,
-//       });
-//       setSuccess(response.data.message);
-//       setEmail("");
-//       setPassword("");
-//     } catch (err) {
-//       setError("Signup failed. Please try again.");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="max-w-md mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
-//       <h2 className="text-2xl font-bold mb-6 text-center">Create an Account</h2>
-//       <form onSubmit={handleSignup}>
-//         <div className="mb-4">
-//           <label className="block text-gray-700 text-sm font-bold mb-2">
-//             Email
-//           </label>
-//           <input
-//             type="email"
-//             value={email}
-//             onChange={(e) => setEmail(e.target.value)}
-//             placeholder="Enter your email"
-//             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-//             required
-//           />
-//         </div>
-//         <div className="mb-4">
-//           <label className="block text-gray-700 text-sm font-bold mb-2">
-//             Password
-//           </label>
-//           <input
-//             type="password"
-//             value={password}
-//             onChange={(e) => setPassword(e.target.value)}
-//             placeholder="Enter your password"
-//             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-//             required
-//           />
-//         </div>
-//         {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-//         {success && <p className="text-green-500 text-sm mb-4">{success}</p>}
-//         <button
-//           type="submit"
-//           className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none"
-//           disabled={loading}
-//         >
-//           {loading ? "Signing up..." : "Signup"}
-//         </button>
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default Register;
