@@ -95,20 +95,20 @@ const Navbar = () => {
           </li>
         </>
       )}
-      {
-        user &&  <li>
-        <NavLink
-          className={({ isActive }) =>
-            isActive
-              ? "mr-3 text-base text-indigo-600"
-              : "mr-3 text-base hover:text-gray-900"
-          }
-          to="/about-us"
-        >
-          About Us
-        </NavLink>
-      </li>
-      }
+      {user && (
+        <li>
+          <NavLink
+            className={({ isActive }) =>
+              isActive
+                ? "mr-3 text-base text-indigo-600"
+                : "mr-3 text-base hover:text-gray-900"
+            }
+            to="/contact-us"
+          >
+            Contact Us
+          </NavLink>
+        </li>
+      )}
     </>
   );
 
@@ -238,10 +238,13 @@ const Navbar = () => {
                   )}
                 </li>
                 <li>
-                  {
-                    (user && user?.emailVerified === true && loggedInUser?.role==="admin") && 
-                    <button><Link to="/dashboard">My Dashboard</Link></button>
-                  }
+                  {user &&
+                    user?.emailVerified === true &&
+                    loggedInUser?.role === "admin" && (
+                      <button>
+                        <Link to="/dashboard">My Dashboard</Link>
+                      </button>
+                    )}
                 </li>
               </ul>
             )}

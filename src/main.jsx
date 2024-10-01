@@ -8,9 +8,10 @@ import Login from "./SignIn/Login";
 import Banner from "./Home/Banner";
 import { Toaster } from "react-hot-toast";
 import AuthProvider from "./Provider/AuthProvider";
-import AboutUs from "./AboutUs/AboutUs";
+// import AboutUs from "./AboutUs/AboutUs";
 import MyDashboard from "./Dashboard/MyDashboard";
 import DashboardLayoute from './Layoute/DashboardLayoute';
+import ContactUs from "./AboutUs/ContactUs";
 
 const router = createBrowserRouter([
   {
@@ -30,8 +31,8 @@ const router = createBrowserRouter([
         element: <Login />,
       },
       {
-        path: "about-us",
-        element: <AboutUs></AboutUs>,
+        path: "contact-us",
+        element: <ContactUs></ContactUs>
       },
     ],
   },

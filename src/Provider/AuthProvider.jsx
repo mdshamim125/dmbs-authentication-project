@@ -49,7 +49,10 @@ const AuthProvider = ({ children }) => {
       role: "user",
       // status: "Verified",
     };
-    const { data } = await axios.put(`http://localhost:5000/user`, currentUser);
+    const { data } = await axios.put(
+      `https://authentication-server-rust.vercel.app/user`,
+      currentUser
+    );
     return data;
   };
 
@@ -64,11 +67,11 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      console.log(currentUser);
+      // console.log(currentUser);
       if (currentUser) {
         saveUser(currentUser);
       }
-      console.log(currentUser);
+      // console.log(currentUser);
     });
     return () => {
       return unsubscribe();

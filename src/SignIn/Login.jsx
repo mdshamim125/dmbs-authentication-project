@@ -45,7 +45,7 @@ const Login = () => {
         }
       })
       .catch((error) => {
-        toast.error(error.message);
+        toast.error("Please enter correct email or passsword.");
       });
   };
 
@@ -78,7 +78,7 @@ const Login = () => {
         toast.success("Check your email for a password reset link.");
       })
       .catch((error) => {
-        toast.error(error.message);
+        toast.error("Please enter correct email or passsword.");
       });
   };
 

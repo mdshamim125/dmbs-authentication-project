@@ -12,7 +12,7 @@ const useRole = () => {
       if (!loading && user?.email) {
         try {
           const { data } = await axios.get(
-            `http://localhost:5000/user/${user?.email}`
+            `https://authentication-server-rust.vercel.app/user/${user?.email}`
           );
           setLoggedInUser(data);
         } catch (error) {
